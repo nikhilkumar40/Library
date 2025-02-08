@@ -4,6 +4,7 @@ package Controller;
 import Entity.Book;
 import Repository.LibraryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@ComponentScan(basePackageClasses = LibraryRepository.class)
 public class BookController {
 
     @Autowired
@@ -27,13 +29,10 @@ public class BookController {
     public ResponseEntity<Book> getBookById(@PathVariable Long id){
         Optional<Book> book =  repo.findById(id);
 
-        if(book.isPresent()){
-            return new ResponseEntity<>(book.get(), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return book.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PostMapping(value = "/addBook")
+    @PostMapping("/addBook")
     public ResponseEntity<Book> addBook(@RequestBody Book book){
         Book newBook = repo.save(book);
         return new ResponseEntity<>(newBook, HttpStatus.OK);
